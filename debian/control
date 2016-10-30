@@ -1,22 +1,34 @@
-Source: lxrandr
+# NOTE: I've changed the `Description' field of the binary Package below
+# while adding support for setting primary monitor. I've also put my
+# github fork into the vcs fields and altered the Maintainer.
+# And I've changed the package name from `lxrandr' to `lxrandrm' in order
+# to distinct it from the original version. Therefore I've added a conflict
+# with real lxrandr.
+# (Thomas Erbesdobler <t.erbesdobler@team103.com>, Oct. 30, 2016)
+
+Source: lxrandrm
 Section: x11
 Priority: optional
-Maintainer: Debian LXDE Maintainers <lxde-debian@lists.lxde.org>
-Uploaders:
- Andrew Lee (李健秋) <ajqlee@debian.org>,
- Andriy Grytsenko <andrej@rep.kiev.ua>
+# Maintainer: Debian LXDE Maintainers <lxde-debian@lists.lxde.org>
+# Uploaders:
+#  Andrew Lee (李健秋) <ajqlee@debian.org>,
+#  Andriy Grytsenko <andrej@rep.kiev.ua>
+Maintainer: Thomas Erbesdobler <t.erbesdobler@team103.com>
 Build-Depends:
  debhelper (>= 8.9.0~), dh-autoreconf, xsltproc,
  docbook-xml, docbook-xsl, intltool,
  libglib2.0-dev, libgtk2.0-dev
-Standards-Version: 3.9.5
+Standards-Version: 3.9.8
 Homepage: http://www.lxde.org/
-Vcs-Browser: http://git.lxde.org/gitweb/?p=debian/lxrandr.git
-Vcs-Git: git://git.lxde.org/git/debian/lxrandr.git
+# Vcs-Browser: http://git.lxde.org/gitweb/?p=debian/lxrandr.git
+# Vcs-Git: git://git.lxde.org/git/debian/lxrandr.git
+Vcs-Browser: https://github.com/erbth/lxrandrm
+Vcs-Git: git://github.com/erbth/lxrandrm.git
 
-Package: lxrandr
+Package: lxrandrm
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
+Conflicts: lxrandr
 Description: LXDE monitor configuration tool
  LXRandR is a GUI application for the Lightweight X11 Desktop Environment
  (LXDE).
@@ -35,12 +47,17 @@ Description: LXDE monitor configuration tool
  very suitable for laptop users who frequently uses projectors or external
  monitor and just want to get their work done without reading a lot of
  "geek-centered" manuals or command line tutorials.
+ .
+ This is a modified version of LXRandR, which includes support for selecting
+ the primary monitor (added by Thomas Erbesdobler <t.erbesdobler@team103.com>).
+ For the modified source code please visit my fork on github (see Vcs-Browser
+ and Vcs-Git) or contact my.
 
-Package: lxrandr-dbg
+Package: lxrandrm-dbg
 Section: debug
 Priority: extra
 Architecture: any
-Depends: ${misc:Depends}, lxrandr (= ${binary:Version})
+Depends: ${misc:Depends}, lxrandrm (= ${binary:Version})
 Description: LXDE monitor configuration tool (debug)
  LXRandR is a GUI application for the Lightweight X11 Desktop Environment
  (LXDE).

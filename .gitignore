@@ -1,3 +1,7 @@
+# I've adapted the dir names in this file while adding support for setting
+# primary monitor. I've also added more files/dirs.
+# (Thomas Erbesdobler <t.erbesdobler@team103.com>)
+
 Makefile.in
 aclocal.m4
 intltool.m4
@@ -52,7 +56,14 @@ src/xml-purge
 src/lxrandr
 data/lxrandr.desktop
 debian/files
-debian/lxrandr.debhelper.log
-debian/lxrandr.substvars
-debian/lxrandr/
+debian/lxrandrm.debhelper.log
+debian/lxrandrm-dbg.debhelper.log
+debian/lxrandrm.substvars
+debian/lxrandrm-dbg.substvars
+debian/lxrandrm/
+debian/lxrandrm-dbg/
+debian/autoreconf.after
+debian/autoreconf.before
+debian/debhelper-build-stamp
+debian/.debhelper
 po/.intltool-merge-cache

@@ -1,1 +1,6 @@
 Notes for compilation: it requires intltool and GTK+ to compile.
+
+This is a modified version of LXRandR. Support for setting primary
+monitor was added by Thoms Erbesdobler <t.erbesdobler@tean103.com>
+on Oct. 30, 2016. See comments in various files and git vcs.
+I've added this paragraph to this README file.

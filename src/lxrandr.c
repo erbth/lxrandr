@@ -19,6 +19,10 @@
  *      along with this program; if not, write to the Free Software
  *      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *      MA 02110-1301, USA.
+ *
+ *      NOTE: This is a modified version of LXRandR. Some changes were made
+ *      to this file. Support for selecting primary monitor was added by
+ *      Thomas Erbesdobler <t.erbesdobler@team103.com> on Oct. 30, 2016.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -54,8 +58,11 @@ typedef struct _Monitor
     short try_rate;
     MonitorPlacement placement;
     MonitorPlacement try_placement;
+    gboolean isPrimary;
+    gboolean try_isPrimary;
 
     GtkCheckButton* enable;
+    GtkCheckButton* btPrimary;
 #if GTK_CHECK_VERSION(2, 24, 0)
     GtkComboBoxText* pos_combo;
     GtkComboBoxText* res_combo;
@@ -118,15 +125,16 @@ static gboolean get_xrandr_info()
         return FALSE;
     }
 
-    regex = g_regex_new( "\n([-a-zA-Z]+[-0-9]*) +connected ([^(\n ]*)[^\n]*"
+    regex = g_regex_new( "\n([-a-zA-Z]+[-0-9]*) +connected (primary )*([^(\n ]*)[^\n]*"
                          "((\n +[0-9]+x[0-9]+[^\n]+)+)",
                          0, 0, NULL );
     if( g_regex_match( regex, output, 0, &match ) )
     {
         do {
             Monitor* m = g_new0( Monitor, 1 );
-            char *modes = g_match_info_fetch( match, 3 );
-            char *coords = g_match_info_fetch(match, 2);
+            char *modes = g_match_info_fetch( match, 4 );
+            char *coords = g_match_info_fetch(match, 3);
+            char *primary = g_match_info_fetch( match, 2 );
             char **lines, **line;
             char *ptr;
             int imode = 0, x = -1, y = -1;
@@ -149,6 +157,15 @@ static gboolean get_xrandr_info()
                 m->placement = PLACEMENT_BELOW;
             else if (y == 0)
                 m->placement = PLACEMENT_RIGHT;
+
+            if (0 == strcmp( primary, "primary "))
+            {
+                m->isPrimary = TRUE;
+            }
+            else
+            {
+                m->isPrimary = FALSE;
+            }
 
             // check if this is the built-in LCD of laptop
             if (! LVDS && (g_str_has_prefix(m->name, "LVDS") ||
@@ -202,12 +219,23 @@ static gboolean get_xrandr_info()
             g_strfreev( lines );
             g_free( modes );
             g_free(coords);
+            g_free( primary );
             monitors = g_slist_prepend( monitors, m );
         }while( g_match_info_next( match, NULL ) );
-
-        g_match_info_free( match );
     }
+    else
+    {
+            g_match_info_free( match );
+            g_regex_unref( regex );
+            g_free( output );
+            setlocale( LC_ALL, ori_locale );
+            g_free( ori_locale );
+            return FALSE;
+    }
+
+    g_match_info_free( match );
     g_regex_unref( regex );
+    g_free( output );
 
     // restore the original locale
     setlocale( LC_ALL, ori_locale );
@@ -234,6 +262,23 @@ static void on_enable_toggled(GtkToggleButton *tb, Monitor* m)
         gtk_widget_set_sensitive(GTK_WIDGET(m->pos_combo), can_position && (m != fixed));
         if (!can_position || m == fixed)
             gtk_combo_box_set_active(GTK_COMBO_BOX(m->pos_combo), 0);
+    }
+}
+
+static void on_btPrimary_toggled(GtkToggleButton *tb, Monitor* m)
+{
+    GSList *l;
+
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(m->btPrimary)))
+    {
+        for (l = monitors; l != NULL; l = l->next)
+        {
+            if (m != (Monitor*) l->data)
+            {
+                Monitor *mon = (Monitor*) l->data;
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(mon->btPrimary), FALSE);
+            }
+        }
     }
 }
 
@@ -280,6 +325,7 @@ static void on_about( GtkButton* btn, gpointer parent )
     const gchar *authors[] =
     {
         "洪任諭 Hong Jen Yee (PCMan) <pcman.tw@gmail.com>",
+        "Support for selecting primary monitor: Thomas Erbesdobler <t.erbesdobler@team103.com>",
         NULL
     };
     /* TRANSLATORS: Replace mw string with your names, one name per line. */
@@ -294,8 +340,8 @@ static void on_about( GtkButton* btn, gpointer parent )
     gtk_about_dialog_set_program_name ( (GtkAboutDialog*)about_dlg, _( "LXRandR" ) );
     //gtk_about_dialog_set_logo( (GtkAboutDialog*)about_dlg, gdk_pixbuf_new_from_file(  PACKAGE_DATA_DIR"/pixmaps/lxrandr.png", NULL ) );
     gtk_about_dialog_set_logo_icon_name( (GtkAboutDialog*)about_dlg, "video-display" );
-    gtk_about_dialog_set_copyright ( (GtkAboutDialog*)about_dlg, _( "Copyright (C) 2008-2014" ) );
-    gtk_about_dialog_set_comments ( (GtkAboutDialog*)about_dlg, _( "Monitor configuration tool for LXDE" ) );
+    gtk_about_dialog_set_copyright ( (GtkAboutDialog*)about_dlg, _( "Copyright (C) 2008-2014\nSupport for selecting primary monitor added on Oct. 30, 2016" ) );
+    gtk_about_dialog_set_comments ( (GtkAboutDialog*)about_dlg, _( "Monitor configuration tool for LXDE\n\nThis version includes support for selecting primary monitor not available in current upstream release. This is a modified version (see credits)." ) );
     gtk_about_dialog_set_license ( (GtkAboutDialog*)about_dlg, "This program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nmw program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with mw program; if not, write to the Free Software\nFoundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA." );
     gtk_about_dialog_set_website ( (GtkAboutDialog*)about_dlg, "http://lxde.org/" );
     gtk_about_dialog_set_authors ( (GtkAboutDialog*)about_dlg, authors );
@@ -328,6 +374,10 @@ static void prepare_try_values_from_GUI()
         if (m->pos_combo)
             m->try_placement = gtk_combo_box_get_active(m->pos_combo);
 #endif
+        if (m->btPrimary)
+        {
+            m->try_isPrimary = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(m->btPrimary));
+        }
         /* g_debug("mode %d rate %d placement %d",m->try_mode,m->try_rate,m->try_placement); */
     }
 }
@@ -429,6 +479,11 @@ static GString* get_command_xrandr_info()
                 g_string_append(cmd, first->name);
             }
 
+            if (m->try_isPrimary)
+            {
+                g_string_append(cmd, " --primary");
+            }
+
             /* g_string_append( cmd, "" ); */
 
         }
@@ -470,9 +525,9 @@ static void save_configuration()
     g_key_file_set_string( kf, grp, "OnlyShowIn", "LXDE" );
 
     data = g_key_file_to_data(kf, &len, NULL);
-    file = g_build_filename(  g_get_user_config_dir(), 
-                              "autostart", 
-                              "lxrandr-autostart.desktop", 
+    file = g_build_filename(  g_get_user_config_dir(),
+                              "autostart",
+                              "lxrandr-autostart.desktop",
                               NULL );
     /* save it to user-specific autostart dir */
     g_debug("save to: %s", file);
@@ -531,6 +586,7 @@ static void set_xrandr_info()
                 m->active_mode = m->try_mode;
                 m->active_rate = m->try_rate;
                 m->placement = m->try_placement;
+                m->isPrimary = m->try_isPrimary;
             }
         }
         else
@@ -542,6 +598,7 @@ static void set_xrandr_info()
                 m->try_mode = m->active_mode;
                 m->try_rate = m->active_rate;
                 m->try_placement = m->placement;
+                m->try_isPrimary = m->isPrimary;
             }
             g_string_free(cmd, TRUE);
             cmd = get_command_xrandr_info();
@@ -659,10 +716,10 @@ static void on_response( GtkDialog* dialog, int response, gpointer user_data )
 
         save_configuration();
 
-        msg = gtk_message_dialog_new( GTK_WINDOW(dialog), 
+        msg = gtk_message_dialog_new( GTK_WINDOW(dialog),
                                       0,
-                                      GTK_MESSAGE_INFO, 
-                                      GTK_BUTTONS_OK, 
+                                      GTK_MESSAGE_INFO,
+                                      GTK_BUTTONS_OK,
                                       _("Configuration Saved") );
         gtk_dialog_run( GTK_DIALOG(msg) );
         gtk_widget_destroy( msg );
@@ -688,7 +745,7 @@ int main(int argc, char** argv)
     if( ! get_xrandr_info() )
     {
         dlg = gtk_message_dialog_new( NULL,
-                                      0, 
+                                      0,
                                       GTK_MESSAGE_ERROR,
                                       GTK_BUTTONS_OK,
                                       _("Unable to get monitor information!"));
@@ -857,6 +914,13 @@ int main(int argc, char** argv)
             if (m == fixed || !can_position || m->active_mode < 0)
                 gtk_widget_set_sensitive(GTK_WIDGET(m->pos_combo), FALSE);
             gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(m->pos_combo), FALSE, TRUE, 2);
+
+            check = gtk_check_button_new_with_label("Primary");
+            m->btPrimary = GTK_CHECK_BUTTON(check);
+            gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(check), FALSE, TRUE, 2 );
+
+            gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(check), m->isPrimary );
+            g_signal_connect( m->btPrimary, "toggled", G_CALLBACK(on_btPrimary_toggled), m);
         }
 
         label = gtk_label_new( _("Resolution:") );
