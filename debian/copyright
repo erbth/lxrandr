@@ -1,7 +1,7 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: LXRandR
-Upstream-Contact: lxde-list@lists.sourceforge.net
-Source: http://sourceforge.net/projects/lxde/files/
+Upstream-Contact: t.erbesdobler@team103.com
+Source: http://github.com/erbth/lxrandrm
 Comment: This is a modified version of LXRandR. Support for setting
  primary monitor was added by Thomas Erbesdobler <t.erbesdobler@team103.com>
  on Oct. 30, 2016.

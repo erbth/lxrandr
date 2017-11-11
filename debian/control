@@ -50,8 +50,8 @@ Description: LXDE monitor configuration tool
  .
  This is a modified version of LXRandR, which includes support for selecting
  the primary monitor (added by Thomas Erbesdobler <t.erbesdobler@team103.com>).
- For the modified source code please visit my fork on github (see Vcs-Browser
- and Vcs-Git) or contact my.
+ For the modified source code please visit my fork on github
+ (github.com/erbth/lxrandrm) or contact my.
 
 Package: lxrandrm-dbg
 Section: debug

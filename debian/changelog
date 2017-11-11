@@ -1,3 +1,13 @@
+lxrandrm (0.3.2) unstable; urgency=medium
+
+  * Set upstream contact to myself as I'm responsible for the modified version
+  * Updated the package description to include the URL to my github fork. It
+    appears that reading the Vcs-Git field is rather difficult without having
+    access to the source package due lack of a mirror.
+    Just to clarify here as well, the URL is github.com/erbth/lxrandrm.
+
+ -- Thomas Erbesdobler <t.erbesdobler@team103.com>  Sat, 11 Nov 2017 15:24:46 +0100
+
 lxrandrm (0.3.1) unstable; urgency=medium
 
   * 0.3.1 is the current upstream release. (see git vcs.)
